@@ -1,22 +1,26 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
-import getPictureUrl from "@/utils/sendRequest";
+import getPicturesUrl from "@/utils/getPicturesUrl";
 import SearchForm from "@/components/searchForm";
+import setEndpoint from "@/utils/setEndpoint";
 
 export default function Home() {
-  const [currentPictureUrl, setCurrentPictureUrl] = useState<string | null>(
+  const [currentPictureUrl, setCurrentPictureUrl] = useState<string[] | null>(
     null
   );
 
+  const [inputDate, setInputDate] = useState<string | null>(null);
+
   const fetchData = async () => {
-    const pictureURL = await getPictureUrl();
-    setCurrentPictureUrl(pictureURL);
+    const endpoint = setEndpoint(inputDate);
+    const picturesURL = await getPicturesUrl(endpoint);
+    setCurrentPictureUrl(picturesURL);
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [inputDate]);
 
   return (
     <>
@@ -32,15 +36,18 @@ export default function Home() {
           Select a date (YYYY-MM-DD) or date range (YYYY-MM-DD - YYYY-MM-DD):
         </p>
 
-        <SearchForm/ >
+        <SearchForm setInputDate={setInputDate} />
 
-        {currentPictureUrl && (
-          <img
-            className={styles.picture}
-            src={currentPictureUrl}
-            alt="Picture of the Day"
-          />
-        )}
+        {currentPictureUrl &&
+          currentPictureUrl.length &&
+          currentPictureUrl.map((url, index) => (
+            <img
+              key={index}
+              className={styles.picture}
+              src={url}
+              alt="Picture of the Day"
+            />
+          ))}
       </main>
     </>
   );
