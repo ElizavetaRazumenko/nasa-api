@@ -1,0 +1,13 @@
+.form {
+  margin: 25px 0;
+}
+
+.search_input {
+  padding: 0 5px;
+}
+
+.btn_get {
+  cursor: pointer;
+  margin: 0 10px;
+  padding: 0 5px;
+}

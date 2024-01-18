@@ -1,12 +1,8 @@
 import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
 import getPictureUrl from "@/utils/sendRequest";
-
-const inter = Inter({ subsets: ["latin"] });
-const endpoint = "https://api.nasa.gov/planetary/apod";
+import SearchForm from "@/components/searchForm";
 
 export default function Home() {
   const [currentPictureUrl, setCurrentPictureUrl] = useState<string | null>(
@@ -30,17 +26,14 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
+      <main className={styles.main}>
         <h1>Astronomy Picture of the Day</h1>
-
         <p>
-            Select a date (YYYY-MM-DD) or date range (YYYY-MM-DD - YYYY-MM-DD):
-          </p>
+          Select a date (YYYY-MM-DD) or date range (YYYY-MM-DD - YYYY-MM-DD):
+        </p>
 
-        <form className={styles.form}>
-          <input type="text" className={styles.search_input} />
-          <button className={styles.btn_get}>Get</button>
-        </form>
+        <SearchForm/ >
+
         {currentPictureUrl && (
           <img
             className={styles.picture}
