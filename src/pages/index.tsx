@@ -1,28 +1,94 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
-import getPicturesData, { PicturesData } from "@/utils/getPicturesData";
 import SearchForm from "@/components/searchForm/searchForm";
-import getEndpoint from "@/utils/getEndpoint";
+import getConvertDateInfo from "@/utils/getConvertDateInfo";
+import router from "next/router";
+import { GetServerSidePropsContext, GetServerSideProps } from "next";
+import { API_KEY, BASIC_URL } from "@/constants/constants";
+import generateID from "@/utils/generateID";
 
-export default function Home() {
-  const [currentPicturesData, setCurrentPicturesData] = useState<PicturesData[] | null>(
-    null
-  );
+type ResponseDataKeys = 'copyright' | 'date' | 'explanation' | 'hdurl' | 'media_type' | 'service_version' | 'title' | 'url';
 
+interface PicturesData {
+  id: string;
+  date: string; 
+  url: string;
+}
+
+interface HomeProps {
+    picturesData: PicturesData[] | null;
+    errorMessage?: string;
+}
+
+export const getServerSideProps: GetServerSideProps = async (context: GetServerSidePropsContext) => {
+  const {
+    date,
+    start_date,
+    end_date,
+  } = context.query;
+console.log(date);
+  let endpoint = '';
+  if (typeof date === 'string') {
+    endpoint = `${BASIC_URL}?date=${date}&api_key=${API_KEY}` 
+  } else {
+    endpoint = `${BASIC_URL}?start_date=${start_date}&end_date=${end_date}&api_key=${API_KEY}` 
+  }
+
+  try {
+    const response = await fetch(endpoint);
+    const responseData = await response.json() as (Record<ResponseDataKeys, string> | Record<ResponseDataKeys, string>[]);
+
+    if (Array.isArray(responseData)) {
+      return {
+        props : {
+          picturesData: [...responseData.map((data) => ({ 
+            id: generateID(), 
+            date: data.date, 
+            url: data.url}))
+          ]
+        }
+      }
+    }  
+
+    return { 
+      props: {
+        picturesData: [{
+          id: generateID(),
+          date: responseData.date, 
+          url: responseData.url
+        }]
+      }
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      return { 
+        props: {
+          picturesData: null,
+          errorMessage: error.message
+        }
+      }
+    }
+  }
+  return {
+    props: {
+      picturesData: null
+    }
+  };
+}
+
+export default function Home({ picturesData, errorMessage } : HomeProps) {
   const [inputDate, setInputDate] = useState<string | null>(null);
-  const [isLoading, setisLoading] = useState<boolean>(false);
 
-  const fetchData = async () => {
-    const endpoint = getEndpoint(inputDate);
-    setisLoading(true);
-    const picturesData = await getPicturesData(endpoint);
-    setisLoading(false);
-    setCurrentPicturesData(picturesData);
+  const setQueryParams = async () => {
+    const convertDateInfo = getConvertDateInfo(inputDate);
+    router.push(convertDateInfo.start_date ?
+      `?start_date=${convertDateInfo.start_date}&end_date=${convertDateInfo.end_date}`
+      : `?date=${convertDateInfo.date}`)
   };
 
   useEffect(() => {
-    fetchData();
+    setQueryParams();
   }, [inputDate]);
 
   return (
@@ -41,13 +107,10 @@ export default function Home() {
 
         <SearchForm setInputDate={setInputDate} />
 
-        {isLoading && <div className={styles.loader}></div>}
-
         <div className={styles.picture_container}>
-        {!isLoading 
-        && currentPicturesData 
-        && currentPicturesData.length 
-        && currentPicturesData.map((data) => (
+        {picturesData 
+        && picturesData.length 
+        && picturesData.map((data) => (
             <div key={data.id} className={styles.flex_column}>
             <p>{data.date}</p>
             <img              
@@ -58,6 +121,12 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {errorMessage 
+        && !picturesData
+        && (
+        <p className={styles.errorMessage}>{errorMessage}</p>
+        ) }
 
       </main>
     </>
