@@ -29,6 +29,7 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
   } = context.query;
 
   let endpoint = '';
+  let picturesData = null;
   if (
     typeof date === 'string'
     || (typeof start_date === 'string' 
@@ -42,26 +43,18 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
       const responseData = await response.json() as (Record<ResponseDataKeys, string> | Record<ResponseDataKeys, string>[]);
   
       if (Array.isArray(responseData)) {
-        return {
-          props : {
-            picturesData: [...responseData.map((data) => ({ 
-              id: generateID(), 
-              date: data.date, 
-              url: data.url}))
-            ]
-          }
-        }
+        picturesData = [...responseData.map((data) => ({ 
+          id: generateID(), 
+          date: data.date, 
+          url: data.url}))
+        ]
+      } else {
+        picturesData = [{
+          id: generateID(),
+          date: responseData.date, 
+          url: responseData.url
+        }]
       }  
-  
-      return { 
-        props: {
-          picturesData: [{
-            id: generateID(),
-            date: responseData.date, 
-            url: responseData.url
-          }]
-        }
-      }
     } catch (error) {
       if (error instanceof Error) {
         return { 
@@ -73,10 +66,10 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
       }
     }
   } 
-
+  
   return {
     props: {
-      picturesData: null
+      picturesData
     }
   };
 }
