@@ -1,21 +1,24 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
-import getPicturesUrl from "@/utils/getPicturesUrl";
+import getPicturesData, { PicturesData } from "@/utils/getPicturesData";
 import SearchForm from "@/components/searchForm/searchForm";
 import getEndpoint from "@/utils/getEndpoint";
 
 export default function Home() {
-  const [currentPictureUrl, setCurrentPictureUrl] = useState<string[] | null>(
+  const [currentPicturesData, setCurrentPicturesData] = useState<PicturesData[] | null>(
     null
   );
 
   const [inputDate, setInputDate] = useState<string | null>(null);
+  const [isLoading, setisLoading] = useState<boolean>(false);
 
   const fetchData = async () => {
     const endpoint = getEndpoint(inputDate);
-    const picturesURL = await getPicturesUrl(endpoint);
-    setCurrentPictureUrl(picturesURL);
+    setisLoading(true);
+    const picturesData = await getPicturesData(endpoint);
+    setisLoading(false);
+    setCurrentPicturesData(picturesData);
   };
 
   useEffect(() => {
@@ -38,20 +41,21 @@ export default function Home() {
 
         <SearchForm setInputDate={setInputDate} />
 
-        <div className={`${styles.picture_container} ${styles.flex_column}`}>
-        {currentPictureUrl &&
-          currentPictureUrl.length &&
-          currentPictureUrl.map((url, index) => (
-            <>
-            <p key={index}>{index + 1}</p>
-                   <img
-              key={index}
+        {isLoading && <div className={styles.loader}></div>}
+
+        <div className={styles.picture_container}>
+        {!isLoading 
+        && currentPicturesData 
+        && currentPicturesData.length 
+        && currentPicturesData.map((data) => (
+            <div key={data.id} className={styles.flex_column}>
+            <p>{data.date}</p>
+            <img              
               className={styles.picture}
-              src={url}
+              src={data.url}
               alt="Picture of the Day"
             />
-            </>
-     
+            </div>
           ))}
         </div>
 
