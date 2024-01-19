@@ -27,49 +27,53 @@ export const getServerSideProps: GetServerSideProps = async (context: GetServerS
     start_date,
     end_date,
   } = context.query;
-console.log(date);
+
   let endpoint = '';
-  if (typeof date === 'string') {
-    endpoint = `${BASIC_URL}?date=${date}&api_key=${API_KEY}` 
-  } else {
-    endpoint = `${BASIC_URL}?start_date=${start_date}&end_date=${end_date}&api_key=${API_KEY}` 
-  }
-
-  try {
-    const response = await fetch(endpoint);
-    const responseData = await response.json() as (Record<ResponseDataKeys, string> | Record<ResponseDataKeys, string>[]);
-
-    if (Array.isArray(responseData)) {
-      return {
-        props : {
-          picturesData: [...responseData.map((data) => ({ 
-            id: generateID(), 
-            date: data.date, 
-            url: data.url}))
-          ]
+  if (
+    typeof date === 'string'
+    || (typeof start_date === 'string' 
+        && typeof end_date === 'string')) {
+    endpoint = date 
+    ? `${BASIC_URL}?date=${date}&api_key=${API_KEY}`
+    : `${BASIC_URL}?start_date=${start_date}&end_date=${end_date}&api_key=${API_KEY}`;
+    
+    try {
+      const response = await fetch(endpoint);
+      const responseData = await response.json() as (Record<ResponseDataKeys, string> | Record<ResponseDataKeys, string>[]);
+  
+      if (Array.isArray(responseData)) {
+        return {
+          props : {
+            picturesData: [...responseData.map((data) => ({ 
+              id: generateID(), 
+              date: data.date, 
+              url: data.url}))
+            ]
+          }
         }
-      }
-    }  
-
-    return { 
-      props: {
-        picturesData: [{
-          id: generateID(),
-          date: responseData.date, 
-          url: responseData.url
-        }]
-      }
-    }
-  } catch (error) {
-    if (error instanceof Error) {
+      }  
+  
       return { 
         props: {
-          picturesData: null,
-          errorMessage: error.message
+          picturesData: [{
+            id: generateID(),
+            date: responseData.date, 
+            url: responseData.url
+          }]
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        return { 
+          props: {
+            picturesData: null,
+            errorMessage: error.message
+          }
         }
       }
     }
-  }
+  } 
+
   return {
     props: {
       picturesData: null
@@ -108,18 +112,20 @@ export default function Home({ picturesData, errorMessage } : HomeProps) {
         <SearchForm setInputDate={setInputDate} />
 
         <div className={styles.picture_container}>
-        {picturesData 
+        {
+        picturesData 
         && picturesData.length 
         && picturesData.map((data) => (
             <div key={data.id} className={styles.flex_column}>
-            <p>{data.date}</p>
-            <img              
-              className={styles.picture}
-              src={data.url}
-              alt="Picture of the Day"
-            />
+              <p>{data.date}</p>
+              <img              
+                className={styles.picture}
+                src={data.url}
+                alt="Picture of the Day"
+              />
             </div>
-          ))}
+          ))
+        }
         </div>
 
         {errorMessage 
