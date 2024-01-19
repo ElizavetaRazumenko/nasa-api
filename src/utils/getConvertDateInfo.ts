@@ -17,6 +17,8 @@ const getConvertDateInfo = (date: string | null): DateInfo => {
   if (date) {
     const dateArr = date.split(' ').filter((date) => date !== "-");
     if (dateArr.length === DATE_RANGE_NUMBER) {
+      dateArr.sort((date1, date2) => new Date(date1).getTime() - new Date(date2).getTime())
+
       defaultDateInfo.start_date = dateArr[0];
       defaultDateInfo.end_date = dateArr[1];
     } else {
