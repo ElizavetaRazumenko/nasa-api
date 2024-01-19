@@ -1,5 +1,5 @@
 import { Form, useForm } from "react-hook-form";
-import styles from "../styles/searchForm.module.css";
+import styles from "./searchForm.module.css";
 import { yupResolver } from "@hookform/resolvers/yup";
 import yupSchema from "@/utils/yupSchema";
 

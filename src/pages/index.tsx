@@ -2,8 +2,8 @@ import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
 import getPicturesUrl from "@/utils/getPicturesUrl";
-import SearchForm from "@/components/searchForm";
-import setEndpoint from "@/utils/setEndpoint";
+import SearchForm from "@/components/searchForm/searchForm";
+import getEndpoint from "@/utils/getEndpoint";
 
 export default function Home() {
   const [currentPictureUrl, setCurrentPictureUrl] = useState<string[] | null>(
@@ -13,7 +13,7 @@ export default function Home() {
   const [inputDate, setInputDate] = useState<string | null>(null);
 
   const fetchData = async () => {
-    const endpoint = setEndpoint(inputDate);
+    const endpoint = getEndpoint(inputDate);
     const picturesURL = await getPicturesUrl(endpoint);
     setCurrentPictureUrl(picturesURL);
   };
@@ -30,7 +30,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main className={`${styles.main} ${styles.flex_column}`}>
         <h1>Astronomy Picture of the Day</h1>
         <p>
           Select a date (YYYY-MM-DD) or date range (YYYY-MM-DD - YYYY-MM-DD):
@@ -38,16 +38,23 @@ export default function Home() {
 
         <SearchForm setInputDate={setInputDate} />
 
+        <div className={`${styles.picture_container} ${styles.flex_column}`}>
         {currentPictureUrl &&
           currentPictureUrl.length &&
           currentPictureUrl.map((url, index) => (
-            <img
+            <>
+            <p>{index + 1}</p>
+                   <img
               key={index}
               className={styles.picture}
               src={url}
               alt="Picture of the Day"
             />
+            </>
+     
           ))}
+        </div>
+
       </main>
     </>
   );

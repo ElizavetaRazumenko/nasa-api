@@ -1,12 +1,23 @@
-.main {
+.flex_column {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.main {
   padding: 2rem;
   min-height: 100vh;
 }
 
+.picture_container {
+  max-width: 850px;
+  max-height: 1000px;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .picture {
-  margin-top: 25px;
-  max-width: 450px;
+  margin: 10px;
+  width: 100%;
 }

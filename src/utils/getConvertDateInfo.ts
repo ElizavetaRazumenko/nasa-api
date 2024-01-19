@@ -7,7 +7,7 @@ export interface DateInfo {
   end_date: string;
 }
 
-const getConvertDateInfo = (date: string | null) => {
+const getConvertDateInfo = (date: string | null): DateInfo => {
   const defaultDateInfo: DateInfo = {
     date: getCurrentDate(),
     start_date: null,
