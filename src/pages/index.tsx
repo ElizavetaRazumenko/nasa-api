@@ -43,7 +43,7 @@ export default function Home() {
           currentPictureUrl.length &&
           currentPictureUrl.map((url, index) => (
             <>
-            <p>{index + 1}</p>
+            <p key={index}>{index + 1}</p>
                    <img
               key={index}
               className={styles.picture}
