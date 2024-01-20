@@ -7,81 +7,40 @@ import router from "next/router";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { API_KEY, BASIC_URL } from "@/constants/constants";
 import generateID from "@/utils/generateID";
-
-type ResponseDataKeys = 'copyright' | 'date' | 'explanation' | 'hdurl' | 'media_type' | 'service_version' | 'title' | 'url';
+import getPicturesData from "@/utils/getPicturesdata";
 
 interface PicturesData {
   id: string;
-  date: string; 
+  date: string;
   url: string;
 }
 
-interface HomeProps {
-    picturesData: PicturesData[] | null;
-    errorMessage?: string;
+export interface HomeProps {
+  picturesData: PicturesData[] | null;
+  errorMessage: string | null;
 }
 
-export const getServerSideProps: GetServerSideProps = async (context: GetServerSidePropsContext) => {
-  const {
-    date,
-    start_date,
-    end_date,
-  } = context.query;
+export const getServerSideProps: GetServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const { date, start_date, end_date } = context.query;
+  const picturesData = await getPicturesData({ date, start_date, end_date });
 
-  let endpoint = '';
-  let picturesData = null;
-  if (
-    typeof date === 'string'
-    || (typeof start_date === 'string' 
-        && typeof end_date === 'string')) {
-    endpoint = date 
-    ? `${BASIC_URL}?date=${date}&api_key=${API_KEY}`
-    : `${BASIC_URL}?start_date=${start_date}&end_date=${end_date}&api_key=${API_KEY}`;
-    
-    try {
-      const response = await fetch(endpoint);
-      const responseData = await response.json() as (Record<ResponseDataKeys, string> | Record<ResponseDataKeys, string>[]);
-  
-      if (Array.isArray(responseData)) {
-        picturesData = [...responseData.map((data) => ({ 
-          id: generateID(), 
-          date: data.date, 
-          url: data.url}))
-        ]
-      } else {
-        picturesData = [{
-          id: generateID(),
-          date: responseData.date, 
-          url: responseData.url
-        }]
-      }  
-    } catch (error) {
-      if (error instanceof Error) {
-        return { 
-          props: {
-            picturesData: null,
-            errorMessage: error.message
-          }
-        }
-      }
-    }
-  } 
-  
   return {
-    props: {
-      picturesData
-    }
+    props: picturesData
   };
-}
+};
 
-export default function Home({ picturesData, errorMessage } : HomeProps) {
+export default function Home({ picturesData, errorMessage }: HomeProps) {
   const [inputDate, setInputDate] = useState<string | null>(null);
 
   const setQueryParams = async () => {
     const convertDateInfo = getConvertDateInfo(inputDate);
-    router.push(convertDateInfo.start_date ?
-      `?start_date=${convertDateInfo.start_date}&end_date=${convertDateInfo.end_date}`
-      : `?date=${convertDateInfo.date}`)
+    router.push(
+      convertDateInfo.start_date
+        ? `?start_date=${convertDateInfo.start_date}&end_date=${convertDateInfo.end_date}`
+        : `?date=${convertDateInfo.date}`
+    );
   };
 
   useEffect(() => {
@@ -105,28 +64,21 @@ export default function Home({ picturesData, errorMessage } : HomeProps) {
         <SearchForm setInputDate={setInputDate} />
 
         <div className={styles.picture_container}>
-        {
-        picturesData 
-        && picturesData.length 
-        && picturesData.map((data) => (
-            <div key={data.id} className={styles.flex_column}>
-              <p>{data.date}</p>
-              <img              
-                className={styles.picture}
-                src={data.url}
-                alt="Picture of the Day"
-              />
-            </div>
-          ))
-        }
+          {picturesData &&
+            picturesData.length &&
+            picturesData.map((data) => (
+              <div key={data.id} className={styles.flex_column}>
+                <p>{data.date}</p>
+                <img
+                  className={styles.picture}
+                  src={data.url}
+                  alt="Picture of the Day"
+                />
+              </div>
+            ))}
         </div>
 
-        {errorMessage 
-        && !picturesData
-        && (
-        <p className={styles.errorMessage}>{errorMessage}</p>
-        ) }
-
+        {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
       </main>
     </>
   );
