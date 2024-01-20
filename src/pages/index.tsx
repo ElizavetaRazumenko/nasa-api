@@ -5,9 +5,7 @@ import SearchForm from "@/components/searchForm/searchForm";
 import getConvertDateInfo from "@/utils/getConvertDateInfo";
 import router from "next/router";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
-import { API_KEY, BASIC_URL } from "@/constants/constants";
-import generateID from "@/utils/generateID";
-import getPicturesData from "@/utils/getPicturesdata";
+import getHomePropsData from "@/utils/getHomePropsData";
 
 interface PicturesData {
   id: string;
@@ -24,10 +22,10 @@ export const getServerSideProps: GetServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const { date, start_date, end_date } = context.query;
-  const picturesData = await getPicturesData({ date, start_date, end_date });
+  const propsData = await getHomePropsData({ date, start_date, end_date });
 
   return {
-    props: picturesData
+    props: propsData,
   };
 };
 

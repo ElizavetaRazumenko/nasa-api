@@ -19,7 +19,7 @@ interface Params {
   end_date: string | string[] | undefined;
 }
 
-const getPicturesData = async ({date, start_date, end_date}: Params): Promise<HomeProps> => {
+const getHomePropsData = async ({date, start_date, end_date}: Params): Promise<HomeProps> => {
   let endpoint = "";
   let picturesData = null;
   let errorMessage = null;
@@ -67,4 +67,4 @@ const getPicturesData = async ({date, start_date, end_date}: Params): Promise<Ho
   };
 }
 
-export default getPicturesData;
+export default getHomePropsData;
